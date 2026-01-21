@@ -30,7 +30,7 @@ namespace NppDB.PostgreSQL
                     cnn.Open();
                     Nodes.Clear();
 
-                    var columns = new List<PostgreSQLColumnInfo>();
+                    var columns = new List<PostgreSqlColumn>();
 
                     if (GetSchema().Foreign)
                     {
@@ -42,7 +42,7 @@ namespace NppDB.PostgreSQL
                         var columnCount = CollectFunctionColumns(cnn, ref columns);
                         if (columnCount == 0) return;
                     }
-                    else 
+                    else
                     {
                         var primaryKeyColumnNames = CollectPrimaryKeys(cnn, ref columns);
                         var foreignKeyColumnNames = CollectForeignKeys(cnn, ref columns);
@@ -69,7 +69,7 @@ namespace NppDB.PostgreSQL
             }
         }
 
-        private int CollectFunctionColumns(NpgsqlConnection connection, ref List<PostgreSQLColumnInfo> columns)
+        private int CollectFunctionColumns(NpgsqlConnection connection, ref List<PostgreSqlColumn> columns)
         {
             var count = 0;
             const string query = "select pg_get_function_arguments(p.oid) as function_arguments " +
@@ -91,13 +91,13 @@ namespace NppDB.PostgreSQL
                             {
                                 if (string.IsNullOrEmpty(argumentNameAndType[0]) ||
                                     string.IsNullOrEmpty(argumentNameAndType[1])) continue;
-                                var postgreSqlColumnInfo = new PostgreSQLColumnInfo(argumentNameAndType[0], argumentNameAndType[1].ToUpper(), 0, 0);
+                                var postgreSqlColumnInfo = new PostgreSqlColumn(argumentNameAndType[0], argumentNameAndType[1].ToUpper(), 0, 0);
                                 columns.Insert(count++, postgreSqlColumnInfo);
                             }
                             else if (argumentNameAndType.Length == 1)
                             {
                                 if (string.IsNullOrEmpty(argumentNameAndType[0])) continue;
-                                var postgreSqlColumnInfo = new PostgreSQLColumnInfo(argumentNameAndType[0].ToUpper(), "", 0, 0);
+                                var postgreSqlColumnInfo = new PostgreSqlColumn(argumentNameAndType[0].ToUpper(), "", 0, 0);
                                 columns.Insert(count++, postgreSqlColumnInfo);
                             }
                         }
@@ -107,7 +107,7 @@ namespace NppDB.PostgreSQL
             return count;
         }
 
-        private int CollectColumns(NpgsqlConnection connection, ref List<PostgreSQLColumnInfo> columns,
+        private int CollectColumns(NpgsqlConnection connection, ref List<PostgreSqlColumn> columns,
             in List<string> primaryKeyColumnNames,
             in List<string> foreignKeyColumnNames,
             in List<string> indexedColumnNames
@@ -143,7 +143,7 @@ namespace NppDB.PostgreSQL
                         if (primaryKeyColumnNames.Contains(columnName)) options += 100;
                         if (foreignKeyColumnNames.Contains(columnName)) options += 1000;
 
-                        var columnInfoNode = new PostgreSQLColumnInfo(columnName, GetDataTypeName(reader), 0, options);
+                        var columnInfoNode = new PostgreSqlColumn(columnName, GetDataTypeName(reader), 0, options);
 
                         var tooltipText = new StringBuilder();
                         tooltipText.AppendLine($"Column: {columnName}");
@@ -152,12 +152,12 @@ namespace NppDB.PostgreSQL
 
                         if (!(columnDefaultObj is DBNull) && columnDefaultObj != null)
                         {
-                             tooltipText.AppendLine($"Default: {columnDefaultObj}");
+                            tooltipText.AppendLine($"Default: {columnDefaultObj}");
                         }
                         if (primaryKeyColumnNames.Contains(columnName))
-                             tooltipText.AppendLine("Primary Key Member");
+                            tooltipText.AppendLine("Primary Key Member");
                         if (foreignKeyColumnNames.Contains(columnName))
-                             tooltipText.AppendLine("Foreign Key Member");
+                            tooltipText.AppendLine("Foreign Key Member");
 
                         columnInfoNode.ToolTipText = tooltipText.ToString().TrimEnd();
 
@@ -174,7 +174,7 @@ namespace NppDB.PostgreSQL
             return dataType.ToUpper();
         }
 
-        private List<string> CollectPrimaryKeys(NpgsqlConnection connection, ref List<PostgreSQLColumnInfo> columns)
+        private List<string> CollectPrimaryKeys(NpgsqlConnection connection, ref List<PostgreSqlColumn> columns)
         {
             const string query = "SELECT distinct c.conname as constraint_name, " +
                                  "pg_get_constraintdef(c.oid) as constraint_definition " +
@@ -192,7 +192,7 @@ namespace NppDB.PostgreSQL
                         var primaryKeyName = reader["constraint_name"].ToString();
                         var primaryKeyDef = reader["constraint_definition"].ToString();
 
-                        var pkNode = new PostgreSQLColumnInfo(primaryKeyName, primaryKeyDef, 1, 0);
+                        var pkNode = new PostgreSqlColumn(primaryKeyName, primaryKeyDef, 1, 0);
 
                         var tooltipText = new StringBuilder();
                         tooltipText.AppendLine($"Primary Key Constraint: {primaryKeyName}");
@@ -212,7 +212,7 @@ namespace NppDB.PostgreSQL
             return names;
         }
 
-        private List<string> CollectForeignKeys(NpgsqlConnection connection, ref List<PostgreSQLColumnInfo> columns)
+        private List<string> CollectForeignKeys(NpgsqlConnection connection, ref List<PostgreSqlColumn> columns)
         {
             const string query = "SELECT distinct c.conname as constraint_name, " +
                                  "pg_get_constraintdef(c.oid) as constraint_definition " +
@@ -243,7 +243,7 @@ namespace NppDB.PostgreSQL
                             }
                         }
 
-                        var fkNode = new PostgreSQLColumnInfo(foreignKeyName, foreignKeyDefFormatted, 2, 0);
+                        var fkNode = new PostgreSqlColumn(foreignKeyName, foreignKeyDefFormatted, 2, 0);
 
                         var tooltipText = new StringBuilder();
                         tooltipText.AppendLine($"Foreign Key Constraint: {foreignKeyName}");
@@ -257,7 +257,7 @@ namespace NppDB.PostgreSQL
             return names;
         }
 
-        private List<string> CollectIndices(NpgsqlConnection connection, ref List<PostgreSQLColumnInfo> columns)
+        private List<string> CollectIndices(NpgsqlConnection connection, ref List<PostgreSqlColumn> columns)
         {
             const string query = "select indexname, indexdef from pg_catalog.pg_indexes where schemaname = '{0}' and tablename = '{1}';";
 
@@ -275,7 +275,6 @@ namespace NppDB.PostgreSQL
 
                         if (processedIndexNames.Contains(indexName)) continue;
 
-
                         var indexDefFormatted = indexDef;
                         var isUnique = indexDef.StartsWith("CREATE UNIQUE INDEX", StringComparison.OrdinalIgnoreCase);
 
@@ -287,7 +286,7 @@ namespace NppDB.PostgreSQL
                             indexDefFormatted = $"({indexColumns})";
                         }
 
-                        var indexNode = new PostgreSQLColumnInfo(indexName, indexDefFormatted, isUnique ? 4 : 3, 0);
+                        var indexNode = new PostgreSqlColumn(indexName, indexDefFormatted, isUnique ? 4 : 3, 0);
 
                         var tooltipText = new StringBuilder();
                         tooltipText.AppendLine($"Index: {indexName}");
@@ -315,8 +314,8 @@ namespace NppDB.PostgreSQL
             var host = connect.CommandHost;
             var schemaName = GetSchemaName();
             var tableNameWithSchema = $"\"{schemaName}\".\"{Text}\"";
-            
-            if (TypeName != "FUNCTION") 
+
+            if (TypeName != "FUNCTION")
             {
                 menuList.Items.Add(new ToolStripButton($"Select all rows", null, (s, e) =>
                 {
@@ -434,7 +433,7 @@ namespace NppDB.PostgreSQL
                 try
                 {
                     cnn.Open();
-                    var columns = new List<PostgreSQLColumnInfo>();
+                    var columns = new List<PostgreSqlColumn>();
                     CollectFunctionColumns(cnn, ref columns);
                     if (columns.Count > 0)
                     {

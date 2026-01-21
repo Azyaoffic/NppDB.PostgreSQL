@@ -158,7 +158,7 @@
     <Compile Include="ParserDispatchingErrorListener.cs" />
     <Compile Include="PostgreSQLAnalyzer.cs" />
     <Compile Include="PostgreSQLAnalyzerHelper.cs" />
-    <Compile Include="PostgreSQLColumnInfo.cs" />
+    <Compile Include="PostgreSQLColumn.cs" />
     <Compile Include="PostgreSQLConnect.cs" />
     <Compile Include="PostgreSQLFunctionGroup.cs" />
     <Compile Include="PostgreSQLSchema.cs" />
