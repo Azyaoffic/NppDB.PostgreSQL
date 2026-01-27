@@ -335,6 +335,13 @@ namespace NppDB.PostgreSQL
                     host.Execute(NppDbCommandType.CREATE_RESULT_VIEW, new[] { id, connect, connect.CreateSqlExecutor() });
                     host.Execute(NppDbCommandType.EXECUTE_SQL, new[] { id, query });
                 }));
+
+                var exportMenu = new ToolStripMenuItem("Select all as");
+                exportMenu.DropDownItems.Add(new ToolStripMenuItem("JSON", null, (s, e) => { SelectAllAsJson(); }));
+                exportMenu.DropDownItems.Add(new ToolStripMenuItem("CSV", null, (s, e) => { SelectAllAsCsv(); }));
+                menuList.Items.Add(exportMenu);
+                
+                menuList.Items.Add(new ToolStripSeparator());
             }
             if (TypeName == "MATERIALIZED_VIEW")
             {
@@ -454,12 +461,6 @@ namespace NppDB.PostgreSQL
                     (s, e) => ShowTablePrompt(TablePromptKind.SUGGEST_VISUALIZATIONS)));
 
                 menuList.Items.Add(aiMenu);
-                
-                var exportMenu = new ToolStripMenuItem("Select all as");
-                exportMenu.DropDownItems.Add(new ToolStripMenuItem("JSON", null, (s, e) => { SelectAllAsJson(); }));
-                exportMenu.DropDownItems.Add(new ToolStripMenuItem("CSV", null, (s, e) => { SelectAllAsCsv(); }));
-                menuList.Items.Add(exportMenu);
-
             }
 
 
