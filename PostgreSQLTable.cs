@@ -454,6 +454,12 @@ namespace NppDB.PostgreSQL
                     (s, e) => ShowTablePrompt(TablePromptKind.SUGGEST_VISUALIZATIONS)));
 
                 menuList.Items.Add(aiMenu);
+                
+                var exportMenu = new ToolStripMenuItem("Select all as");
+                exportMenu.DropDownItems.Add(new ToolStripMenuItem("JSON", null, (s, e) => { SelectAllAsJson(); }));
+                exportMenu.DropDownItems.Add(new ToolStripMenuItem("CSV", null, (s, e) => { SelectAllAsCsv(); }));
+                menuList.Items.Add(exportMenu);
+
             }
 
 
@@ -682,6 +688,113 @@ namespace NppDB.PostgreSQL
                 );
             }
         }
+        
+        private void SelectAllAsJson()
+        {
+            var connect = GetDbConnect();
+            if (connect?.CommandHost == null) return;
+
+            var schemaName = GetSchemaName();
+            var tableNameWithSchema = $"\"{schemaName}\".\"{Text}\"";
+
+            SelectAllAsText("JSON", () =>
+            {
+                using (var cnn = connect.GetConnection())
+                {
+                    cnn.Open();
+                    var query =
+                        "SELECT COALESCE(jsonb_pretty(jsonb_agg(to_jsonb(t))), '[]') AS json\n" +
+                        "FROM (SELECT * FROM " + tableNameWithSchema + ") t;";
+
+                    using (var command = new NpgsqlCommand(query, cnn))
+                    {
+                        var result = command.ExecuteScalar();
+                        return result?.ToString() ?? "[]";
+                    }
+                }
+            });
+        }
+
+        private void SelectAllAsCsv()
+        {
+            var connect = GetDbConnect();
+            if (connect?.CommandHost == null) return;
+
+            var schemaName = GetSchemaName();
+            var tableNameWithSchema = $"\"{schemaName}\".\"{Text}\"";
+
+            SelectAllAsText("CSV", () =>
+            {
+                using (var cnn = connect.GetConnection())
+                {
+                    cnn.Open();
+
+                    var copySql =
+                        "COPY (SELECT * FROM " + tableNameWithSchema + ") " +
+                        "TO STDOUT WITH (FORMAT CSV, HEADER TRUE)";
+
+                    using (var reader = cnn.BeginTextExport(copySql))
+                    {
+                        return reader.ReadToEnd();
+                    }
+                }
+            });
+        }
+
+        private void SelectAllAsText(string kind, Func<string> loader)
+        {
+            var connect = GetDbConnect();
+            if (connect?.CommandHost == null) return;
+            var host = connect.CommandHost;
+
+            try
+            {
+                if (TreeView != null)
+                {
+                    TreeView.Enabled = false;
+                    TreeView.Cursor = Cursors.WaitCursor;
+                }
+
+                var text = loader?.Invoke() ?? "";
+
+                try
+                {
+                    Clipboard.SetText(text);
+                }
+                catch (Exception exClipboard)
+                {
+                    MessageBox.Show(
+                        "Export succeeded but copying to clipboard failed: " + exClipboard.Message,
+                        "NppDB",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning
+                    );
+                }
+
+                host.Execute(NppDbCommandType.NEW_FILE, null);
+                host.Execute(NppDbCommandType.APPEND_TO_CURRENT_VIEW, new object[] { text });
+
+                MessageBox.Show(
+                    kind + " exported to a new tab. Output was also copied to clipboard.",
+                    "NppDB",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information
+                );
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, @"Exception");
+            }
+            finally
+            {
+                if (TreeView != null)
+                {
+                    TreeView.Enabled = true;
+                    TreeView.Cursor = null;
+                }
+            }
+        }
+
 
 
         private string CollectFunctionParams(PostgreSqlConnect connect)
