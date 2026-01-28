@@ -320,6 +320,7 @@ namespace NppDB.PostgreSQL
                 menuList.Items.Add(new ToolStripButton($"Select all rows", null, (s, e) =>
                 {
                     host.Execute(NppDbCommandType.NEW_FILE, null);
+                    host.Execute(NppDbCommandType.SET_SQL_LANGUAGE, null);
                     var id = host.Execute(NppDbCommandType.GET_ACTIVATED_BUFFER_ID, null);
                     var query = $"SELECT * FROM \"{schemaName}\".\"{Text}\";";
                     host.Execute(NppDbCommandType.APPEND_TO_CURRENT_VIEW, new object[] { query });
@@ -329,6 +330,7 @@ namespace NppDB.PostgreSQL
                 menuList.Items.Add(new ToolStripButton($"Select random 100 rows", null, (s, e) =>
                 {
                     host.Execute(NppDbCommandType.NEW_FILE, null);
+                    host.Execute(NppDbCommandType.SET_SQL_LANGUAGE, null);
                     var id = host.Execute(NppDbCommandType.GET_ACTIVATED_BUFFER_ID, null);
                     var query = $"SELECT * FROM \"{schemaName}\".\"{Text}\" FETCH FIRST 100 ROWS ONLY;";
                     host.Execute(NppDbCommandType.APPEND_TO_CURRENT_VIEW, new object[] { query });

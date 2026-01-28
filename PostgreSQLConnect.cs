@@ -55,6 +55,7 @@ namespace NppDB.PostgreSQL
             if (id != null)
             {
                 CommandHost.Execute(NppDbCommandType.NEW_FILE, null);
+                CommandHost.Execute(NppDbCommandType.SET_SQL_LANGUAGE, null);
             }
             id = CommandHost.Execute(NppDbCommandType.GET_ACTIVATED_BUFFER_ID, null);
             CommandHost.Execute(NppDbCommandType.CREATE_RESULT_VIEW, new[] { id, this, CreateSqlExecutor() });
@@ -249,6 +250,7 @@ namespace NppDB.PostgreSQL
                     try
                     {
                         host.Execute(NppDbCommandType.NEW_FILE, null);
+                        host.Execute(NppDbCommandType.SET_SQL_LANGUAGE, null);
                         var idObj = host.Execute(NppDbCommandType.GET_ACTIVATED_BUFFER_ID, null);
                         if (idObj == null) return;
                         var bufferId = (IntPtr)idObj;
@@ -266,6 +268,8 @@ namespace NppDB.PostgreSQL
                             var idObj = host.Execute(NppDbCommandType.GET_ACTIVATED_BUFFER_ID, null);
                             if (idObj == null) { Console.WriteLine(@"Attach failed: Could not get Activated Buffer ID."); return; }
                             var bufferId = (IntPtr)idObj;
+
+                            host.Execute(NppDbCommandType.SET_SQL_LANGUAGE, null);
 
                             host.Execute(NppDbCommandType.CREATE_RESULT_VIEW, new object[] { bufferId, connect, CreateSqlExecutor() });
                         }
