@@ -424,6 +424,37 @@ namespace NppDB.PostgreSQL
             }
             return false;
         }
+        
+        public static bool HasQualifiedSelectStar(Simple_select_pramaryContext ctx)
+        {
+            var targets = ctx?.opt_target_list()?.target_list()?.target_el();
+            if (targets == null || targets.Length == 0) return false;
+
+            foreach (var t in targets)
+            {
+                if (t is Target_labelContext lbl && HasText(lbl.a_expr()))
+                {
+                    var colRefs = new List<IParseTree>();
+                    FindAllTargetTypes(lbl.a_expr(), typeof(ColumnrefContext), colRefs);
+
+                    foreach (var tree in colRefs)
+                    {
+                        var colRef = tree as ColumnrefContext;
+                        var indir = colRef?.indirection();
+                        if (indir == null) continue;
+
+                        foreach (var el in indir.indirection_el())
+                        {
+                            if (el?.DOT() != null && el?.STAR() != null)
+                            {
+                                return true; // matches u.* / schema.table.* etc.
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
+        }
 
         public static IParseTree FindFirstTargetTypeParent(IParseTree context, Type target)
         {

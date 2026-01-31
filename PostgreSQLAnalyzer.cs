@@ -115,9 +115,11 @@ namespace NppDB.PostgreSQL
                             {
                                 command.AddWarning(ctx.distinct_clause(), ParserMessageType.DISTINCT_KEYWORD_WITH_GROUP_BY_CLAUSE);
                             }
-                            if (HasSelectStar(ctx))
+                            if (HasSelectStar(ctx) || HasQualifiedSelectStar(ctx))
                             {
-                                if (tableCount > 1)
+                                command.AddWarning(ctx, ParserMessageType.SELECT_ALL_IN_SELECT_CLAUSE);
+
+                                if (HasSelectStar(ctx) && tableCount > 1)
                                 {
                                     command.AddWarning(ctx, ParserMessageType.SELECT_ALL_WITH_MULTIPLE_JOINS);
                                 }
@@ -319,7 +321,7 @@ namespace NppDB.PostgreSQL
                         if (context is InsertstmtContext ctx)
                         {
                             int insertColumnCount = CountInsertColumns(ctx);
-                            if (insertColumnCount == 0 && ctx?.insert_rest()?.OVERRIDING() == null && ctx?.insert_rest()?.DEFAULT() == null && ctx?.insert_rest()?.VALUES() == null)
+                            if (insertColumnCount == 0 && ctx?.insert_rest()?.DEFAULT() == null)
                             {
                                 command.AddWarning(ctx, ParserMessageType.INSERT_STATEMENT_WITHOUT_COLUMN_NAMES);
                             }
@@ -329,6 +331,22 @@ namespace NppDB.PostgreSQL
                                 command.AddWarning(ctx, ParserMessageType.SELECT_ALL_IN_INSERT_STATEMENT);
                             }
                         }
+                        
+                        if (context is UpdatestmtContext updCtx)
+                        {
+                            if (!HasText(updCtx.where_or_current_clause()))
+                            {
+                                command.AddWarning(updCtx, ParserMessageType.UPDATE_STATEMENT_WITHOUT_WHERE_CLAUSE);
+                            }
+                        }
+                        else if (context is DeletestmtContext delCtx)
+                        {
+                            if (!HasText(delCtx.where_or_current_clause()))
+                            {
+                                command.AddWarning(delCtx, ParserMessageType.DELETE_STATEMENT_WITHOUT_WHERE_CLAUSE);
+                            }
+                        }
+                        
                         break;
                     }
                 case RULE_select_no_parens: 
