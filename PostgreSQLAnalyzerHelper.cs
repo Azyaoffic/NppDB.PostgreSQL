@@ -472,6 +472,27 @@ namespace NppDB.PostgreSQL
             }
             return null;
         }
+        
+        public static bool HasRandomOrderingFunction(IParseTree context)
+        {
+            List<IParseTree> funcs = new List<IParseTree>();
+            FindAllTargetTypes(context, typeof(Func_applicationContext), funcs);
+
+            foreach (var item in funcs)
+            {
+                if (item is Func_applicationContext func && HasText(func.func_name()))
+                {
+                    var nameText = func.func_name().GetText().ToLower();
+                    var parts = nameText.Split('.');
+                    var name = parts.Length > 0 ? parts[parts.Length - 1] : nameText;
+
+                    if (name == "random" || name == "rand")
+                        return true;
+                }
+            }
+            return false;
+        }
+
 
         public static IParseTree FindFirstTargetType(IParseTree context, Type target)
         {

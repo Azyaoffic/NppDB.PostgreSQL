@@ -457,6 +457,10 @@ namespace NppDB.PostgreSQL
                     {
                         if (context is Sortby_listContext ctx)
                         {
+                            if (HasRandomOrderingFunction(ctx))
+                                command.AddWarning(ctx, ParserMessageType.ORDER_BY_RANDOM_FUNCTION);
+                            
+                            
                             List<IParseTree> aexprconsts = new List<IParseTree>();
                             FindAllTargetTypes(ctx, typeof(AexprconstContext), aexprconsts);
                             foreach (IParseTree item in aexprconsts)
