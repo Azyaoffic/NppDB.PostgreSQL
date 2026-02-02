@@ -52,6 +52,15 @@ namespace NppDB.PostgreSQL
                             bool hasWhereClause = HasText(ctx.where_clause());
                             bool hasFromClause = HasText(ctx.from_clause());
                             bool hasNonAnsiJoin = HasNonAnsiJoin(ctx);
+                            int joinCount = CountJoinsInFromClause(ctx);
+                            int subqueryCount = CountSubqueriesInSelect(ctx);
+                            bool hasAggregates = HasAggregateFunction(ctx);
+
+                            if (IsExcessivelyComplexSelect(joinCount, subqueryCount, columnCount, hasGroupByClause, hasAggregates))
+                            {
+                                command.AddWarning(ctx, ParserMessageType.COMPLEX_SELECT_STATEMENT);
+                            }
+
                             if (HasMissingColumnAlias(columns))
                             {
                                 command.AddWarning(ctx, ParserMessageType.MISSING_COLUMN_ALIAS_IN_SELECT_CLAUSE);

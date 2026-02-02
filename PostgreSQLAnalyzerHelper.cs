@@ -649,6 +649,41 @@ namespace NppDB.PostgreSQL
             }
             return 0;
         }
+        
+        public static int CountJoinsInFromClause(Simple_select_pramaryContext ctx)
+        {
+            if (!HasText(ctx?.from_clause())) return 0;
+            return CountToken(ctx.from_clause(), PostgreSQLParser.JOIN, 0);
+        }
+
+        public static int CountSubqueriesInSelect(Simple_select_pramaryContext ctx)
+        {
+            if (!HasText(ctx)) return 0;
+            var subQueries = new List<IParseTree>();
+            FindAllTargetTypes(ctx, typeof(PostgreSQLParser.Select_no_parensContext), subQueries);
+            return subQueries.Count;
+        }
+
+        private static int CountToken(IParseTree context, int tokenType, int count)
+        {
+            if (context is ITerminalNode t && t.Symbol != null && t.Symbol.Type == tokenType)
+                count++;
+
+            for (var i = 0; i < context.ChildCount; ++i)
+                count = CountToken(context.GetChild(i), tokenType, count);
+
+            return count;
+        }
+        
+        public static bool IsExcessivelyComplexSelect(int joinCount, int subqueryCount, int columnCount, bool hasGroupBy, bool hasAggregates)
+        {
+            // TODO: Tune thresholds as needed
+            if (joinCount >= 3) return true;
+            if (subqueryCount >= 2) return true;
+            if (columnCount >= 20) return true;
+
+            return joinCount >= 2 && hasGroupBy && hasAggregates;
+        }
 
         public static bool HasDuplicateColumns(Target_elContext[] columns) 
         {
