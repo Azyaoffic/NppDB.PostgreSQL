@@ -492,6 +492,20 @@ namespace NppDB.PostgreSQL
                     {
                         if (context is A_expr_likeContext ctx && HasText(ctx))
                         {
+                            var rhsText = ctx.rhs?.GetText();
+                            if (!string.IsNullOrEmpty(rhsText))
+                            {
+                                var q = rhsText.IndexOf('\'');
+                                if (q >= 0 && q + 1 < rhsText.Length)
+                                {
+                                    var first = rhsText[q + 1];
+                                    if (first == '%' || first == '_')
+                                    {
+                                        command.AddWarning(ctx, ParserMessageType.LEADING_WILDCARD_IN_LIKE_EXPRESSION);
+                                    }
+                                }
+                            }
+
                             if (HasText(ctx.rhs) && ctx._ILIKE == null)
                             {
                                 C_expr_exprContext value = (C_expr_exprContext)FindFirstTargetType(ctx.rhs, typeof(C_expr_exprContext));
