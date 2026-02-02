@@ -461,6 +461,8 @@ namespace NppDB.PostgreSQL
             if (context == null) return null;
 
             var parent = context.Parent;
+            if (parent == null) return null;
+
             if (target.IsAssignableFrom(parent.GetType()))
             {
                 return parent;

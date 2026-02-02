@@ -620,6 +620,41 @@ namespace NppDB.PostgreSQL
                         }
                         break;
                     }
+                case RULE_typename:
+                {
+                    if (context is TypenameContext ctx && HasText(ctx))
+                    {
+                        var typeText = ctx.GetText().ToLower();
+
+                        var lastPart = typeText;
+                        var dotPos = typeText.LastIndexOf('.');
+                        if (dotPos >= 0 && dotPos < typeText.Length - 1)
+                        {
+                            lastPart = typeText.Substring(dotPos + 1);
+                        }
+
+                        var isFloatType =
+                            lastPart.StartsWith("float") ||
+                            lastPart == "real" ||
+                            lastPart == "doubleprecision";
+
+                        if (isFloatType)
+                        {
+                            var inDdl =
+                                FindFirstTargetTypeParent(ctx, typeof(CreatestmtContext)) != null ||
+                                FindFirstTargetTypeParent(ctx, typeof(CreateforeigntablestmtContext)) != null ||
+                                FindFirstTargetTypeParent(ctx, typeof(CreatedomainstmtContext)) != null ||
+                                FindFirstTargetTypeParent(ctx, typeof(AltertablestmtContext)) != null ||
+                                FindFirstTargetTypeParent(ctx, typeof(AlterdomainstmtContext)) != null;
+
+                            if (inDdl)
+                            {
+                                command.AddWarning(ctx, ParserMessageType.USE_FLOAT_DATA_TYPE);
+                            }
+                        }
+                    }
+                    break;
+                }
             }
         }
 
