@@ -908,6 +908,50 @@ namespace NppDB.PostgreSQL
             }
             return null;
         }
+        
+        public static bool CreateTableHasAnyConstraints(CreatestmtContext ctx)
+        {
+            var elements = ctx?.opttableelementlist()?.tableelementlist()?.tableelement();
+            if (elements == null || elements.Length == 0) return false;
+
+            foreach (var el in elements)
+            {
+                if (el == null) continue;
+
+                if (HasText(el.tablelikeclause())) return true;
+                if (HasText(el.tableconstraint())) return true;
+
+                var col = el.columnDef();
+                if (HasColumnConstraints(col)) return true;
+            }
+            return false;
+        }
+
+        public  static bool HasColumnConstraints(ColumnDefContext col)
+        {
+            var q = col?.colquallist();
+            if (!HasText(q)) return false;
+
+            var constraints = q.colconstraint();
+            if (constraints == null || constraints.Length == 0) return false;
+
+            foreach (var c in constraints)
+            {
+                var elem = c?.colconstraintelem();
+                if (!HasText(elem)) continue;
+                if (elem == null) continue;
+
+                // valid constraints for this check
+                if (elem.NOT() != null && elem.NULL_P() != null) return true;
+                if (elem.UNIQUE() != null) return true;
+                if (elem.PRIMARY() != null) return true;
+                if (elem.CHECK() != null) return true;
+                if (elem.REFERENCES() != null) return true;
+
+            }
+            return false;
+        }
+
 
     }
 }

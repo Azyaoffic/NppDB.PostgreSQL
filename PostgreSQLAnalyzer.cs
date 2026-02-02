@@ -655,6 +655,20 @@ namespace NppDB.PostgreSQL
                     }
                     break;
                 }
+                case RULE_createstmt:
+                {
+                    if (context is CreatestmtContext ctx)
+                    {
+                        if (ctx.OPEN_PAREN() != null)
+                        {
+                            if (!CreateTableHasAnyConstraints(ctx))
+                            {
+                                command.AddWarning(ctx, ParserMessageType.MISSING_CONSTRAINTS_IN_CREATE_TABLE);
+                            }
+                        }
+                    }
+                    break;
+                }
             }
         }
 
