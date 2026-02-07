@@ -5,7 +5,7 @@
         public PostgreSQLView()
         {
             TypeName = "VIEW";
-            SelectedImageKey = ImageKey = "Table";
+            SelectedImageKey = ImageKey = "View";
         }
     }
 }

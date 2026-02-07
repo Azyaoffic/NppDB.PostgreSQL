@@ -12,7 +12,7 @@ namespace NppDB.PostgreSQL
         public bool Foreign { get; set; }
         public PostgreSqlSchema()
         {
-            SelectedImageKey = ImageKey = "Database";
+            SelectedImageKey = ImageKey = "Schema";
         }
 
         public void Refresh()

@@ -21,6 +21,9 @@ namespace NppDB.PostgreSQL
                 FuncOid = reader["function_oid"].ToString(),
                 TypeName = "FUNCTION"
             };
+            
+            functionNode.SelectedImageKey = functionNode.ImageKey = "Function";
+
             return functionNode;
         }
 

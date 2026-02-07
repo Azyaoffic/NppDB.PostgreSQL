@@ -19,6 +19,9 @@ namespace NppDB.PostgreSQL
                 Text = reader["table_name"].ToString(),
                 TypeName = "FOREIGN TABLE"
             };
+            
+            tableNode.SelectedImageKey = tableNode.ImageKey = "ForeignTable";
+
             return tableNode;
         }
     }

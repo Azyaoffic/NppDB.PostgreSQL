@@ -23,6 +23,9 @@ namespace NppDB.PostgreSQL
                 Text = reader["table_name"].ToString(),
                 TypeName = "MATERIALIZED VIEW"
             };
+            
+            matViewNode.SelectedImageKey = matViewNode.ImageKey = "MaterializedView";
+
             return matViewNode;
         }
     }
