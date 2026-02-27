@@ -507,7 +507,7 @@ namespace NppDB.PostgreSQL
             
             PostgreSQLPromptReading.LibraryFilePath = Path.Combine(dir, "promptLibrary.xml");
             
-            PostgreSQLPromptReading.PreferencesFilePath = Path.Combine(dir, "prompt_preferences.json");
+            PostgreSQLPromptReading.PreferencesFilePath = Path.Combine(dir, "settings.json");
         }
 
         private List<PromptItemNoPlaceholder> LoadTablePromptsFromFile(INppDbCommandHost commandHost)
