@@ -472,27 +472,6 @@ namespace NppDB.PostgreSQL
                 }
             }
             
-            // options to generate AI prompt
-            if (TypeName != "FUNCTION")
-            {
-                _tableAiPrompts = LoadTablePromptsFromFile(host);
-
-                if (_tableAiPrompts.Count > 0)
-                {
-                    menuList.Items.Add(new ToolStripSeparator());
-
-                    var aiMenu = new ToolStripMenuItem("AI Prompts");
-                
-                    foreach (var prompt in _tableAiPrompts)
-                    {
-                        aiMenu.DropDownItems.Add(new ToolStripMenuItem(prompt.Title, null,
-                            (s, e) => ShowTablePrompt(prompt)));
-                    }
-
-                    menuList.Items.Add(aiMenu);
-                }
-            }
-
 
             var dummy = new ToolStripButton("Dummy", null, (s, e) => { });
             dummy.Visible = false;
