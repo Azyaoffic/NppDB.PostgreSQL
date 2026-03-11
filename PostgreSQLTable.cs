@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -10,15 +9,6 @@ using NppDB.Comm;
 
 namespace NppDB.PostgreSQL
 {
-    public struct PromptItemNoPlaceholder
-    {
-        public string Id;
-        public string Title;
-        public string Description;
-        public string Type; // "TablePrompt", "LlmPrompt"
-        public string Text;
-    }
-
     public class PostgreSqlTable : TreeNode, IRefreshable, IMenuProvider
     {
         public string TypeName { get; set; } = "TABLE";
@@ -27,8 +17,6 @@ namespace NppDB.PostgreSQL
         {
             SelectedImageKey = ImageKey = @"Table";
         }
-        
-        private List<PromptItemNoPlaceholder> _tableAiPrompts = new List<PromptItemNoPlaceholder>();
 
         public void Refresh()
         {
@@ -478,101 +466,7 @@ namespace NppDB.PostgreSQL
             menuList.Items.Add(dummy);
             return menuList;
         }
-        
-        private void InitializePathsForPromptReading(INppDbCommandHost commandHost)
-        {
-            var dir = commandHost?.Execute(NppDbCommandType.GET_PLUGIN_CONFIG_DIRECTORY, null) as string;
-            if (string.IsNullOrWhiteSpace(dir)) return;
-            
-            PostgreSQLPromptReading.LibraryFilePath = Path.Combine(dir, "promptLibrary.xml");
-            
-            PostgreSQLPromptReading.PreferencesFilePath = Path.Combine(dir, "settings.json");
-        }
 
-        private List<PromptItemNoPlaceholder> LoadTablePromptsFromFile(INppDbCommandHost commandHost)
-        {
-            InitializePathsForPromptReading(commandHost);
-
-            var prompts = PostgreSQLPromptReading.ReadPromptLibraryFromFile();
-            if (prompts == null || prompts.Count == 0)
-            {
-                return new List<PromptItemNoPlaceholder>();
-            }
-            
-            return prompts.Where(p => p.Type.Equals("TablePrompt", StringComparison.OrdinalIgnoreCase)).ToList();
-        }
-
-        private void ShowTablePrompt(PromptItemNoPlaceholder promptItem)
-        {
-            var tableName = Text;
-            var columnsWithTypes = GetColumnsWithTypesFromTree();
-            if (columnsWithTypes == null) return; // error already shown
-
-            var title = promptItem.Title;
-            var prompt = promptItem.Text
-                .Replace("{{table_name}}", tableName)
-                .Replace("{{columns_with_types}}", columnsWithTypes)
-                .Replace("{{dialect}}", "PostgreSQL");
-            
-            var userPreferences = PostgreSQLPromptReading.LoadUserPromptPreferences();
-            if (!string.IsNullOrWhiteSpace(userPreferences))
-            {
-                prompt = prompt + "\n\n" + userPreferences;
-
-            }
-
-            CopyPromptToClipboardAndShow(title, prompt);
-        }
-
-        private string GetColumnsWithTypesFromTree()
-        {
-            var sb = new StringBuilder();
-
-            foreach (TreeNode node in Nodes)
-            {
-                if (node == null) continue;
-                sb.AppendLine(node.Text);
-            }
-
-            var text = sb.ToString().TrimEnd('\r', '\n');
-            if (string.IsNullOrWhiteSpace(text))
-            {
-                MessageBox.Show(
-                    "No columns loaded in tree. Please expand the table node once to load columns, then retry.",
-                    "NppDB",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Warning
-                );
-                return null;
-            }
-
-            return text;
-        }
-
-        private void CopyPromptToClipboardAndShow(string title, string prompt)
-        {
-            try
-            {
-                Clipboard.SetText(prompt);
-
-                var dialogMessage =
-                    "AI prompt copied to clipboard!\n\n" +
-                    "--- Prompt Content: ---\n" +
-                    prompt;
-
-                MessageBox.Show(dialogMessage, "NppDB - " + title, MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(
-                    "Error copying prompt to clipboard or displaying prompt: " + ex.Message,
-                    "NppDB",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error
-                );
-            }
-        }
-        
         private void SelectAllAsJson()
         {
             var connect = GetDbConnect();
