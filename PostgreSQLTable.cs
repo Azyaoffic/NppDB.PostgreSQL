@@ -558,7 +558,7 @@ namespace NppDB.PostgreSQL
                     );
                 }
 
-                host.Execute(NppDbCommandType.NEW_FILE, null);
+                host.Execute(NppDbCommandType.NEW_FILE, new object[]{ true });
                 host.Execute(NppDbCommandType.APPEND_TO_CURRENT_VIEW, new object[] { text });
 
                 MessageBox.Show(
