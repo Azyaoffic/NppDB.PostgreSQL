@@ -83,7 +83,7 @@ namespace NppDB.PostgreSQL
 
             menuList.Items.Add(new ToolStripSeparator());
 
-            menuList.Items.Add(new ToolStripButton("Create ALTER COLUMN query", null, (s, e) =>
+            menuList.Items.Add(new ToolStripButton("Create statement to change the data type", null, (s, e) =>
                 {
                     host.Execute(NppDbCommandType.NEW_FILE, null);
                     host.Execute(NppDbCommandType.SET_SQL_LANGUAGE, null);
@@ -94,7 +94,7 @@ namespace NppDB.PostgreSQL
                 })
                 { Enabled = allowAlter });
 
-            menuList.Items.Add(new ToolStripButton("Create DROP COLUMN query", null, (s, e) =>
+            menuList.Items.Add(new ToolStripButton("Create statement to drop the column", null, (s, e) =>
                 {
                     host.Execute(NppDbCommandType.NEW_FILE, null);
                     host.Execute(NppDbCommandType.SET_SQL_LANGUAGE, null);
