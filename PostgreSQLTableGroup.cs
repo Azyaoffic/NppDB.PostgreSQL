@@ -46,7 +46,7 @@ namespace NppDB.PostgreSQL
                             while (reader.Read())
                             {
                                 var childNode = CreateTreeNode(reader);
-                                var childName = reader["table_name"].ToString();
+                                var childName = childNode.Text;
 
                                 if (NodeHasChildrenCheck(cnn, schemaNode.Text, childName))
                                 {

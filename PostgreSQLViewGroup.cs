@@ -22,6 +22,9 @@ namespace NppDB.PostgreSQL
                 Text = reader["table_name"].ToString(),
                 TypeName = "VIEW"
             };
+
+            viewNode.SelectedImageKey = viewNode.ImageKey = "View";
+
             return viewNode;
         }
     }
