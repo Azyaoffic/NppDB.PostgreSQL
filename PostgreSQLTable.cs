@@ -327,7 +327,7 @@ namespace NppDB.PostgreSQL
                     host.Execute(NppDbCommandType.CREATE_RESULT_VIEW, new[] { id, connect, connect.CreateSqlExecutor() });
                     host.Execute(NppDbCommandType.EXECUTE_SQL, new[] { id, query });
                 }));
-                menuList.Items.Add(new ToolStripButton($"Select random 100 rows", null, (s, e) =>
+                menuList.Items.Add(new ToolStripButton($"Select first 100 rows", null, (s, e) =>
                 {
                     host.Execute(NppDbCommandType.NEW_FILE, null);
                     host.Execute(NppDbCommandType.SET_SQL_LANGUAGE, null);
@@ -338,7 +338,7 @@ namespace NppDB.PostgreSQL
                     host.Execute(NppDbCommandType.EXECUTE_SQL, new[] { id, query });
                 }));
                 
-                menuList.Items.Add(new ToolStripMenuItem("Count amount of rows", null, (s, e) =>
+                menuList.Items.Add(new ToolStripMenuItem("Count the number of rows", null, (s, e) =>
                 {
                     host.Execute(NppDbCommandType.NEW_FILE, null);
                     host.Execute(NppDbCommandType.SET_SQL_LANGUAGE, null);
@@ -425,8 +425,8 @@ namespace NppDB.PostgreSQL
                     menuList.Items.Add(new ToolStripButton($"Drop {TypeName.ToLower()} (RESTRICT)", null, (s, e) =>
                     {
                         var objectName = Text;
-                        var message = $"Are you sure you want to drop the {TypeName.ToLower()} '{objectName}' RESTRICT?\n" +
-                                      "This action cannot be undone and will fail if other objects depend on this {TypeName.ToLower()}.";
+                        var message = $"Are you sure you want to drop the {TypeName.ToLower()} '{objectName}' with RESTRICT?\n" +
+                                      $"This action cannot be undone and will fail if other objects depend on this {TypeName.ToLower()}.";
                         if (MessageBox.Show(message, $@"Confirm Drop {TypeName}", MessageBoxButtons.YesNo,
                                 MessageBoxIcon.Warning) != DialogResult.Yes) return;
                         var paramsQuery = (TypeName == "FUNCTION") ? CollectFunctionParams(connect) : "";
@@ -447,7 +447,7 @@ namespace NppDB.PostgreSQL
                     menuList.Items.Add(new ToolStripButton($"Drop {TypeName.ToLower()} (CASCADE)", null, (s, e) =>
                     {
                         var objectName = Text;
-                        var message = $"Are you sure you want to drop the {TypeName.ToLower()} '{objectName}' CASCADE?\n" +
+                        var message = $"Are you sure you want to drop the {TypeName.ToLower()} '{objectName}' with CASCADE?\n" +
                                       "WARNING: This will also drop all dependent objects automatically.\n" +
                                       "This action cannot be undone.";
                         if (MessageBox.Show(message, $@"Confirm Drop {TypeName} with Cascade", MessageBoxButtons.YesNo,
