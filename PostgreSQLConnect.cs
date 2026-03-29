@@ -85,7 +85,7 @@ namespace NppDB.PostgreSQL
                 dlg.Server = ServerAddress;
                 dlg.Port = Port;
                 dlg.Database = Database;
-                dlg.FocusPassword();
+                dlg.FocusUsername();
                 dlg.SetConnNameVisible(true);
             }
             else

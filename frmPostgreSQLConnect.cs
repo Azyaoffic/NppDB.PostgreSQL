@@ -6,6 +6,8 @@ namespace NppDB.PostgreSQL
 {
     public partial class frmPostgreSQLConnect : Form
     {
+        private bool _focusUsernameOnLoad;
+
         public frmPostgreSQLConnect()
         {
             InitializeComponent();
@@ -99,6 +101,15 @@ namespace NppDB.PostgreSQL
         private void frmPassword_Load(object sender, EventArgs e)
         {
             AdjustPasswordChar();
+
+            if (_focusUsernameOnLoad)
+            {
+                BeginInvoke((Action)(() =>
+                {
+                    txtUsername.Focus();
+                    txtUsername.SelectAll();
+                }));
+            }
         }
 
         public void SetConnNameVisible(bool visible)
@@ -107,12 +118,9 @@ namespace NppDB.PostgreSQL
             txtConnName.Visible = visible;
         }
 
-        public void FocusPassword()
+        public void FocusUsername()
         {
-            txtPassword.TabIndex = 0;
-            btnOK.TabIndex = 1;
-            btnCancel.TabIndex = 2;
-            btnTestConnection.TabIndex = 3;
+            _focusUsernameOnLoad = true;
         }
     }
 }

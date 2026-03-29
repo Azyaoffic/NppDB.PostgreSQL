@@ -112,7 +112,7 @@ namespace NppDB.PostgreSQL
             this.btnOK.Location = new System.Drawing.Point(280, 287);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(75, 23);
-            this.btnOK.TabIndex = 16;
+            this.btnOK.TabIndex = 17;
             this.btnOK.Text = "OK";
             this.btnOK.UseVisualStyleBackColor = true;
             this.btnOK.Click += new System.EventHandler(this.btnOK_Click);
@@ -122,7 +122,7 @@ namespace NppDB.PostgreSQL
             this.btnCancel.Location = new System.Drawing.Point(431, 287);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
-            this.btnCancel.TabIndex = 17;
+            this.btnCancel.TabIndex = 18;
             this.btnCancel.Text = "Cancel";
             this.btnCancel.UseVisualStyleBackColor = true;
             this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
@@ -149,7 +149,7 @@ namespace NppDB.PostgreSQL
             this.cbxShowPwd.Location = new System.Drawing.Point(514, 249);
             this.cbxShowPwd.Name = "cbxShowPwd";
             this.cbxShowPwd.Size = new System.Drawing.Size(101, 17);
-            this.cbxShowPwd.TabIndex = 997;
+            this.cbxShowPwd.TabIndex = 16;
             this.cbxShowPwd.Text = "Show password";
             this.cbxShowPwd.UseVisualStyleBackColor = true;
             this.cbxShowPwd.CheckedChanged += new System.EventHandler(this.cbxShowPwd_CheckedChanged);
@@ -184,7 +184,7 @@ namespace NppDB.PostgreSQL
             this.btnTestConnection.Location = new System.Drawing.Point(281, 327);
             this.btnTestConnection.Name = "btnTestConnection";
             this.btnTestConnection.Size = new System.Drawing.Size(225, 23);
-            this.btnTestConnection.TabIndex = 18;
+            this.btnTestConnection.TabIndex = 19;
             this.btnTestConnection.Text = "Test connection";
             this.btnTestConnection.UseVisualStyleBackColor = true;
             this.btnTestConnection.Click += new System.EventHandler(this.btnTestConnection_Click);
