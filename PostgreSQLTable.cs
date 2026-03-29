@@ -143,7 +143,8 @@ namespace NppDB.PostgreSQL
                         if (primaryKeyColumnNames.Contains(columnName)) options += 100;
                         if (foreignKeyColumnNames.Contains(columnName)) options += 1000;
 
-                        var columnInfoNode = new PostgreSqlColumn(columnName, GetDataTypeName(reader), 0, options);
+                        var columnTypeText = GetDataTypeName(reader) + (isNullable ? string.Empty : " NOT NULL");
+                        var columnInfoNode = new PostgreSqlColumn(columnName, columnTypeText, 0, options);
 
                         var tooltipText = new StringBuilder();
                         tooltipText.AppendLine($"Column: {columnName}");
