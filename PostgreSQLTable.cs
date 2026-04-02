@@ -387,7 +387,9 @@ namespace NppDB.PostgreSQL
                 menuList.Items.Add(new ToolStripSeparator());
             }
 
-            if (TypeName == "MATERIALIZED_VIEW")
+            var normalizedTypeName = (TypeName ?? "TABLE").Replace('_', ' ');
+
+            if (normalizedTypeName == "MATERIALIZED VIEW")
             {
                 menuList.Items.Add(new ToolStripButton("Refresh materialized view", null, (s, e) =>
                 {
@@ -399,13 +401,37 @@ namespace NppDB.PostgreSQL
                     var id = host.Execute(NppDbCommandType.GET_ACTIVATED_BUFFER_ID, null);
                     host.Execute(NppDbCommandType.EXECUTE_SQL, new[] { id, query });
                 }));
-                menuList.Items.Add(new ToolStripButton("Drop materialized view", null, (s, e) =>
+
+                menuList.Items.Add(new ToolStripButton("Drop materialized view (RESTRICT)", null, (s, e) =>
                 {
                     var mvName = $"\"{Text}\"";
-                    var message = $"Are you sure you want to drop the materialized view {mvName}?\nThis action cannot be undone.";
+                    var message = $"Are you sure you want to drop the materialized view {mvName} with RESTRICT?\n" +
+                                  "This action cannot be undone and will fail if other objects depend on this materialized view.";
                     if (MessageBox.Show(message, @"Confirm Drop Materialized View", MessageBoxButtons.YesNo,
                             MessageBoxIcon.Warning) != DialogResult.Yes) return;
-                    var query = $"DROP MATERIALIZED VIEW {tableNameWithSchema};";
+                    var query = $"DROP MATERIALIZED VIEW {tableNameWithSchema} RESTRICT;";
+                    var id = host.Execute(NppDbCommandType.GET_ACTIVATED_BUFFER_ID, null);
+                    host.Execute(NppDbCommandType.EXECUTE_SQL, new[] { id, query });
+                    System.Threading.Thread.Sleep(500);
+                    if (Parent is IRefreshable parentGroupNode)
+                    {
+                        parentGroupNode.Refresh();
+                    }
+                    else if (TreeView != null)
+                    {
+                        Remove();
+                    }
+                }));
+
+                menuList.Items.Add(new ToolStripButton("Drop materialized view (CASCADE)", null, (s, e) =>
+                {
+                    var mvName = $"\"{Text}\"";
+                    var message = $"Are you sure you want to drop the materialized view {mvName} with CASCADE?\n" +
+                                  "WARNING: This will also drop all dependent objects automatically.\n" +
+                                  "This action cannot be undone.";
+                    if (MessageBox.Show(message, @"Confirm Drop Materialized View with Cascade", MessageBoxButtons.YesNo,
+                            MessageBoxIcon.Exclamation) != DialogResult.Yes) return;
+                    var query = $"DROP MATERIALIZED VIEW {tableNameWithSchema} CASCADE;";
                     var id = host.Execute(NppDbCommandType.GET_ACTIVATED_BUFFER_ID, null);
                     host.Execute(NppDbCommandType.EXECUTE_SQL, new[] { id, query });
                     System.Threading.Thread.Sleep(500);
@@ -419,19 +445,19 @@ namespace NppDB.PostgreSQL
                     }
                 }));
             }
-            else if (TypeName != "FOREIGN_TABLE")
+            else if (normalizedTypeName != "FOREIGN TABLE")
             {
                 if (schemaName != "information_schema" && schemaName != "pg_catalog")
                 {
-                    menuList.Items.Add(new ToolStripButton($"Drop {TypeName.ToLower()} (RESTRICT)", null, (s, e) =>
+                    menuList.Items.Add(new ToolStripButton($"Drop {normalizedTypeName.ToLower()} (RESTRICT)", null, (s, e) =>
                     {
                         var objectName = Text;
-                        var message = $"Are you sure you want to drop the {TypeName.ToLower()} '{objectName}' with RESTRICT?\n" +
-                                      $"This action cannot be undone and will fail if other objects depend on this {TypeName.ToLower()}.";
-                        if (MessageBox.Show(message, $@"Confirm Drop {TypeName}", MessageBoxButtons.YesNo,
+                        var message = $"Are you sure you want to drop the {normalizedTypeName.ToLower()} '{objectName}' with RESTRICT?\n" +
+                                      $"This action cannot be undone and will fail if other objects depend on this {normalizedTypeName.ToLower()}.";
+                        if (MessageBox.Show(message, $@"Confirm Drop {normalizedTypeName}", MessageBoxButtons.YesNo,
                                 MessageBoxIcon.Warning) != DialogResult.Yes) return;
-                        var paramsQuery = (TypeName == "FUNCTION") ? CollectFunctionParams(connect) : "";
-                        var query = $"DROP {TypeName} {tableNameWithSchema}{paramsQuery} RESTRICT;";
+                        var paramsQuery = (normalizedTypeName == "FUNCTION") ? CollectFunctionParams(connect) : "";
+                        var query = $"DROP {normalizedTypeName} {tableNameWithSchema}{paramsQuery} RESTRICT;";
                         var id = host.Execute(NppDbCommandType.GET_ACTIVATED_BUFFER_ID, null);
                         host.Execute(NppDbCommandType.EXECUTE_SQL, new[] { id, query });
                         System.Threading.Thread.Sleep(500);
@@ -445,16 +471,16 @@ namespace NppDB.PostgreSQL
                         }
                     }));
 
-                    menuList.Items.Add(new ToolStripButton($"Drop {TypeName.ToLower()} (CASCADE)", null, (s, e) =>
+                    menuList.Items.Add(new ToolStripButton($"Drop {normalizedTypeName.ToLower()} (CASCADE)", null, (s, e) =>
                     {
                         var objectName = Text;
-                        var message = $"Are you sure you want to drop the {TypeName.ToLower()} '{objectName}' with CASCADE?\n" +
+                        var message = $"Are you sure you want to drop the {normalizedTypeName.ToLower()} '{objectName}' with CASCADE?\n" +
                                       "WARNING: This will also drop all dependent objects automatically.\n" +
                                       "This action cannot be undone.";
-                        if (MessageBox.Show(message, $@"Confirm Drop {TypeName} with Cascade", MessageBoxButtons.YesNo,
+                        if (MessageBox.Show(message, $@"Confirm Drop {normalizedTypeName} with Cascade", MessageBoxButtons.YesNo,
                                 MessageBoxIcon.Exclamation) != DialogResult.Yes) return;
-                        var paramsQuery = (TypeName == "FUNCTION") ? CollectFunctionParams(connect) : "";
-                        var query = $"DROP {TypeName} {tableNameWithSchema}{paramsQuery} CASCADE;";
+                        var paramsQuery = (normalizedTypeName == "FUNCTION") ? CollectFunctionParams(connect) : "";
+                        var query = $"DROP {normalizedTypeName} {tableNameWithSchema}{paramsQuery} CASCADE;";
                         var id = host.Execute(NppDbCommandType.GET_ACTIVATED_BUFFER_ID, null);
                         host.Execute(NppDbCommandType.EXECUTE_SQL, new[] { id, query });
                         System.Threading.Thread.Sleep(500);
@@ -469,7 +495,6 @@ namespace NppDB.PostgreSQL
                     }));
                 }
             }
-            
 
             var dummy = new ToolStripButton("Dummy", null, (s, e) => { });
             dummy.Visible = false;
