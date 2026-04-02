@@ -32,7 +32,7 @@ namespace NppDB.PostgreSQL
 
                     var columns = new List<PostgreSqlColumn>();
 
-                    if (GetSchema().Foreign)
+                    if (TypeName == "FOREIGN TABLE")
                     {
                         var columnCount = CollectColumns(cnn, ref columns, new List<string>(), new List<string>(), new List<string>());
                         if (columnCount == 0) return;

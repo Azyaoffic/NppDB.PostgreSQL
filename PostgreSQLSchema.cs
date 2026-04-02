@@ -80,7 +80,7 @@ namespace NppDB.PostgreSQL
             {
                 case "BASE TABLE":          query = "SELECT 1 FROM information_schema.tables WHERE table_schema = $1 AND table_type = 'BASE TABLE' LIMIT 1"; break;
                 case "VIEW":                query = "SELECT 1 FROM information_schema.tables WHERE table_schema = $1 AND table_type = 'VIEW' LIMIT 1"; break;
-                case "FOREIGN TABLE":       query = "SELECT 1 FROM information_schema.tables WHERE table_schema = $1 AND table_type = 'FOREIGN TABLE' LIMIT 1"; break;
+                case "FOREIGN TABLE":       query = "SELECT 1 FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace WHERE n.nspname = $1 AND c.relkind = 'f' LIMIT 1"; break;
                 case "MATERIALIZED VIEW":   query = "SELECT 1 FROM pg_catalog.pg_matviews WHERE schemaname = $1 LIMIT 1"; break;
                 case "FUNCTION":            query = "SELECT 1 FROM pg_catalog.pg_proc p LEFT JOIN pg_catalog.pg_namespace n ON n.oid = p.pronamespace WHERE n.nspname = $1 AND p.prokind = 'f' LIMIT 1"; break;
                 default:

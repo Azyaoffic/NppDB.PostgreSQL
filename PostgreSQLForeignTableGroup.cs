@@ -7,7 +7,7 @@ namespace NppDB.PostgreSQL
     {
         public PostgreSqlForeignTableGroup()
         {
-            Query = "SELECT table_name FROM information_schema.tables WHERE table_schema='{0}' AND table_type = 'FOREIGN TABLE' ORDER BY table_name";
+            Query = "SELECT c.relname AS table_name FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace WHERE n.nspname = '{0}' AND c.relkind = 'f' ORDER BY table_name";
             Text = "Foreign Tables";
             SelectedImageKey = ImageKey = "Group";
         }
