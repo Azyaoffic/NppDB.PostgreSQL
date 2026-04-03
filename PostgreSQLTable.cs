@@ -320,7 +320,19 @@ namespace NppDB.PostgreSQL
             {
                 menuList.Items.Add(new ToolStripButton($"Select all rows", null, (s, e) =>
                 {
+                    var sourceBufferObj = host.Execute(NppDbCommandType.GET_ACTIVATED_BUFFER_ID, null);
                     host.Execute(NppDbCommandType.NEW_FILE, null);
+                    var targetBufferObj = host.Execute(NppDbCommandType.GET_ACTIVATED_BUFFER_ID, null);
+                    if (sourceBufferObj is IntPtr sourceBufferId &&
+                        targetBufferObj is IntPtr targetBufferId &&
+                        sourceBufferId != IntPtr.Zero &&
+                        targetBufferId != IntPtr.Zero &&
+                        sourceBufferId != targetBufferId)
+                    {
+                        host.Execute(
+                            NppDbCommandType.CLONE_DB_TREE_STATE_TO_BUFFER,
+                            new object[] { sourceBufferId, targetBufferId });
+                    }
                     host.Execute(NppDbCommandType.SET_SQL_LANGUAGE, null);
                     var id = host.Execute(NppDbCommandType.GET_ACTIVATED_BUFFER_ID, null);
                     var query = $"SELECT * FROM \"{schemaName}\".\"{Text}\";";
@@ -330,7 +342,19 @@ namespace NppDB.PostgreSQL
                 }));
                 menuList.Items.Add(new ToolStripButton($"Select first 100 rows", null, (s, e) =>
                 {
+                    var sourceBufferObj = host.Execute(NppDbCommandType.GET_ACTIVATED_BUFFER_ID, null);
                     host.Execute(NppDbCommandType.NEW_FILE, null);
+                    var targetBufferObj = host.Execute(NppDbCommandType.GET_ACTIVATED_BUFFER_ID, null);
+                    if (sourceBufferObj is IntPtr sourceBufferId &&
+                        targetBufferObj is IntPtr targetBufferId &&
+                        sourceBufferId != IntPtr.Zero &&
+                        targetBufferId != IntPtr.Zero &&
+                        sourceBufferId != targetBufferId)
+                    {
+                        host.Execute(
+                            NppDbCommandType.CLONE_DB_TREE_STATE_TO_BUFFER,
+                            new object[] { sourceBufferId, targetBufferId });
+                    }
                     host.Execute(NppDbCommandType.SET_SQL_LANGUAGE, null);
                     var id = host.Execute(NppDbCommandType.GET_ACTIVATED_BUFFER_ID, null);
                     var query = $"SELECT * FROM \"{schemaName}\".\"{Text}\" FETCH FIRST 100 ROWS ONLY;";
@@ -341,7 +365,19 @@ namespace NppDB.PostgreSQL
                 
                 menuList.Items.Add(new ToolStripMenuItem("Count the number of rows", null, (s, e) =>
                 {
+                    var sourceBufferObj = host.Execute(NppDbCommandType.GET_ACTIVATED_BUFFER_ID, null);
                     host.Execute(NppDbCommandType.NEW_FILE, null);
+                    var targetBufferObj = host.Execute(NppDbCommandType.GET_ACTIVATED_BUFFER_ID, null);
+                    if (sourceBufferObj is IntPtr sourceBufferId &&
+                        targetBufferObj is IntPtr targetBufferId &&
+                        sourceBufferId != IntPtr.Zero &&
+                        targetBufferId != IntPtr.Zero &&
+                        sourceBufferId != targetBufferId)
+                    {
+                        host.Execute(
+                            NppDbCommandType.CLONE_DB_TREE_STATE_TO_BUFFER,
+                            new object[] { sourceBufferId, targetBufferId });
+                    }
                     host.Execute(NppDbCommandType.SET_SQL_LANGUAGE, null);
                     var id = host.Execute(NppDbCommandType.GET_ACTIVATED_BUFFER_ID, null);
                     var query = $"SELECT COUNT(*) AS row_count FROM \"{schemaName}\".\"{Text}\";";
@@ -372,8 +408,22 @@ namespace NppDB.PostgreSQL
                         // ignore
                     }
 
+                    var sourceBufferObj = host.Execute(NppDbCommandType.GET_ACTIVATED_BUFFER_ID, null);
                     host.Execute(NppDbCommandType.NEW_FILE, null);
+                    var targetBufferObj = host.Execute(NppDbCommandType.GET_ACTIVATED_BUFFER_ID, null);
+                    if (sourceBufferObj is IntPtr sourceBufferId &&
+                        targetBufferObj is IntPtr targetBufferId &&
+                        sourceBufferId != IntPtr.Zero &&
+                        targetBufferId != IntPtr.Zero &&
+                        sourceBufferId != targetBufferId)
+                    {
+                        host.Execute(
+                            NppDbCommandType.CLONE_DB_TREE_STATE_TO_BUFFER,
+                            new object[] { sourceBufferId, targetBufferId });
+                    }
                     host.Execute(NppDbCommandType.SET_SQL_LANGUAGE, null);
+                    var id = host.Execute(NppDbCommandType.GET_ACTIVATED_BUFFER_ID, null);
+                    host.Execute(NppDbCommandType.CREATE_RESULT_VIEW, new[] { id, connect, connect.CreateSqlExecutor() });
                     host.Execute(NppDbCommandType.APPEND_TO_CURRENT_VIEW, new object[] { ddl });
 
                     MessageBox.Show(
@@ -600,6 +650,8 @@ namespace NppDB.PostgreSQL
                         new object[] { sourceBufferId, targetBufferId });
                 }
 
+                var id = host.Execute(NppDbCommandType.GET_ACTIVATED_BUFFER_ID, null);
+                host.Execute(NppDbCommandType.CREATE_RESULT_VIEW, new[] { id, connect, connect.CreateSqlExecutor() });
                 host.Execute(NppDbCommandType.APPEND_TO_CURRENT_VIEW, new object[] { text });
 
                 MessageBox.Show(
