@@ -47,6 +47,7 @@ namespace NppDB.PostgreSQL
                         var primaryKeyColumnNames = CollectPrimaryKeys(cnn, ref columns);
                         var foreignKeyColumnNames = CollectForeignKeys(cnn, ref columns);
                         var indexedColumnNames = CollectIndices(cnn, ref columns);
+                        CollectCheckConstraints(cnn, ref columns);
 
                         var columnCount = CollectColumns(cnn, ref columns, primaryKeyColumnNames, foreignKeyColumnNames, indexedColumnNames);
                         if (columnCount == 0) return;
@@ -143,7 +144,13 @@ namespace NppDB.PostgreSQL
                         if (primaryKeyColumnNames.Contains(columnName)) options += 100;
                         if (foreignKeyColumnNames.Contains(columnName)) options += 1000;
 
-                        var columnTypeText = GetDataTypeName(reader) + (isNullable ? string.Empty : " NOT NULL");
+                        var columnTypeText = GetDataTypeName(reader);
+                        if (!(columnDefaultObj is DBNull) && columnDefaultObj != null && !string.IsNullOrWhiteSpace(columnDefaultObj.ToString()))
+                        {
+                            columnTypeText += $" DEFAULT {columnDefaultObj}";
+                        }
+                        if (!isNullable) columnTypeText += " NOT NULL";
+
                         var columnInfoNode = new PostgreSqlColumn(columnName, columnTypeText, 0, options);
 
                         var tooltipText = new StringBuilder();
@@ -256,6 +263,38 @@ namespace NppDB.PostgreSQL
                 }
             }
             return names;
+        }
+
+        private void CollectCheckConstraints(NpgsqlConnection connection, ref List<PostgreSqlColumn> columns)
+        {
+            const string query = "SELECT c.conname AS constraint_name, " +
+                                 "pg_catalog.pg_get_constraintdef(c.oid, true) AS constraint_definition " +
+                                 "FROM pg_catalog.pg_constraint c " +
+                                 "JOIN pg_catalog.pg_class AS cls ON cls.oid = c.conrelid " +
+                                 "WHERE c.contype = 'c' " +
+                                 "AND c.connamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = '{0}') " +
+                                 "AND cls.relname = '{1}'";
+
+            using (var command = new NpgsqlCommand(string.Format(query, GetSchemaName(), Text), connection))
+            {
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        var checkConstraintName = reader["constraint_name"].ToString();
+                        var checkConstraintDef = reader["constraint_definition"].ToString();
+
+                        var checkNode = new PostgreSqlColumn(checkConstraintName, checkConstraintDef, 5, 0);
+
+                        var tooltipText = new StringBuilder();
+                        tooltipText.AppendLine($"Check Constraint: {checkConstraintName}");
+                        tooltipText.AppendLine($"Definition: {checkConstraintDef}");
+                        checkNode.ToolTipText = tooltipText.ToString().TrimEnd();
+
+                        columns.Add(checkNode);
+                    }
+                }
+            }
         }
 
         private List<string> CollectIndices(NpgsqlConnection connection, ref List<PostgreSqlColumn> columns)
