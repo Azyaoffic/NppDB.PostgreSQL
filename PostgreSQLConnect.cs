@@ -107,11 +107,24 @@ namespace NppDB.PostgreSQL
             Password = dlg.Password;
             Title = !string.IsNullOrEmpty(ConnectionName) ? ConnectionName : GetDefaultTitle();
 
+            var validationMessage = DependencyDiagnostics.BuildPostgreSqlValidationMessage(ServerAddress, Port, Database, Account);
+            if (!string.IsNullOrWhiteSpace(validationMessage))
+            {
+                MessageBox.Show(validationMessage, @"PostgreSQL connection details", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return false;
+            }
+
             return true;
         }
 
         public void Connect()
         {
+            var validationMessage = DependencyDiagnostics.BuildPostgreSqlValidationMessage(ServerAddress, Port, Database, Account);
+            if (!string.IsNullOrWhiteSpace(validationMessage))
+            {
+                throw new InvalidOperationException(validationMessage);
+            }
+
             if (_connection == null) _connection = new NpgsqlConnection();
 
             var curConnStrBuilder = GetConnectionStringBuilder();
@@ -151,7 +164,9 @@ namespace NppDB.PostgreSQL
             catch (Exception ex)
             {
                 _serverVersion = null;
-                throw new ApplicationException("connect fail", ex);
+                throw new InvalidOperationException(
+                    DependencyDiagnostics.BuildPostgreSqlConnectionErrorMessage(ex, ServerAddress, Port, Database, Account),
+                    ex);
             }
         }
 
@@ -180,11 +195,16 @@ namespace NppDB.PostgreSQL
 
         internal NpgsqlConnectionStringBuilder GetConnectionStringBuilder()
         {
+            if (!int.TryParse(Port, out var parsedPort) || parsedPort < 1 || parsedPort > 65535)
+            {
+                throw new InvalidOperationException("PostgreSQL port must be a number between 1 and 65535.");
+            }
+
             var builder = new NpgsqlConnectionStringBuilder
             {
                 Username = Account,
                 Host = ServerAddress,
-                Port = int.Parse(Port),
+                Port = parsedPort,
                 Database = Database,
                 IncludeErrorDetail = true,
             };
@@ -200,18 +220,10 @@ namespace NppDB.PostgreSQL
                 return "FAIL";
             }
 
-            try
-            {
-                Connect();
-                Attach();
-                Refresh();
-                return "FRESH_NODES";
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message + (ex.InnerException != null ? " : " + ex.InnerException.Message : ""));
-            }
-            return "FAIL";
+            Connect();
+            Attach();
+            Refresh();
+            return "FRESH_NODES";
         }
 
         public void Disconnect()
