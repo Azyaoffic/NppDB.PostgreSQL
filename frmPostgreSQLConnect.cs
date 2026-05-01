@@ -61,6 +61,11 @@ namespace NppDB.PostgreSQL
         }
         private void btnTestConnection_Click(object sender, EventArgs e)
         {
+            if (!ValidateTestConnectionInputs())
+            {
+                return;
+            }
+
             var connection = new NpgsqlConnection();
             var builder = new NpgsqlConnectionStringBuilder
             {
@@ -86,6 +91,32 @@ namespace NppDB.PostgreSQL
                 connection.Dispose();
                 NpgsqlConnection.ClearPool(connection);
             }
+        }
+
+        private bool ValidateTestConnectionInputs()
+        {
+            if (string.IsNullOrWhiteSpace(Server))
+            {
+                MessageBox.Show(@"Host is required.", @"Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtServer.Focus();
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(Database))
+            {
+                MessageBox.Show(@"Database is required.", @"Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtDatabase.Focus();
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(Username))
+            {
+                MessageBox.Show(@"Username is required.", @"Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtUsername.Focus();
+                return false;
+            }
+
+            return true;
         }
 
         private void cbxShowPwd_CheckedChanged(object sender, EventArgs e)
